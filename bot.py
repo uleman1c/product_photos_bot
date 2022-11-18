@@ -85,9 +85,9 @@ def get_korr_photo(message):
 
     global korr_number, korr_id
 
-    if message.document is not None:
+    if message.photo is not None:
 
-        file_info = bot.get_file(message.document.file_id)
+        file_info = bot.get_file(message.photo[len(message.photo) - 1].file_id)
         m_file_path = file_info.file_path.split('.')
 
         send = requests.get('https://api.telegram.org/file/bot' + bot_token + '/' + file_info.file_path)
