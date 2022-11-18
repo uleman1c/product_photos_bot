@@ -3,7 +3,9 @@ import sys
 from telebot import types
 import telebot
 
-bot_token = '5821786763:AAGxBAcVVLBBCPkA19EfFR7CUhqhXOaYPxs'
+from bot_token import get_token
+
+bot_token = get_token()
 
 bot = telebot.TeleBot(bot_token)
 
