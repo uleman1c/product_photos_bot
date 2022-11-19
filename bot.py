@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import sys
 import uuid
@@ -18,27 +19,18 @@ korr_id = ''
 @bot.message_handler(content_types=['text', 'document', 'audio'])
 def get_text_messages(message):
 
-    if message.text == "Привет":
-        bot.send_message(message.from_user.id, "Привет, чем я могу тебе помочь?")
+    bot.send_message(message.from_user.id, "введите номер корректировки или часть названия контрагента")
+    bot.register_next_step_handler(message, get_korr_number)
 
-    elif message.text == "/help":
-        bot.send_message(message.from_user.id, "Напиши привет")
-
-    elif message.text.lower() == "корр":
-        bot.send_message(message.from_user.id, "введите номер корректировки")
-        bot.register_next_step_handler(message, get_korr_number)
-
-    else:
-        bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
 
 
 def get_korr_number(message):
 
     global korr_number
 
-    korr_number = message.text
+    korr_number = message.text.lower()
     
-    bot.send_message(message.from_user.id, 'Ищем номер ' + korr_number)
+    # bot.send_message(message.from_user.id, 'Ищем номер ' + korr_number)
 
     server_address = "https://ow.ap-ex.ru/Tech_man/hs/dta/obj?request=getKorrByFilter&filter=" + korr_number
     try:
@@ -52,17 +44,24 @@ def get_korr_number(message):
 
         keyboard = types.InlineKeyboardMarkup()
 
-        for korr in korrs:
+        if len(korrs):
 
-            key_number = types.InlineKeyboardButton(text=korr.get('number'), callback_data=korr.get('number') + ':' + korr.get('korr')) 
-            keyboard.add(key_number); 
+            for korr in korrs:
+
+                korr_date = datetime.strptime(korr.get('date'), '%Y%m%d%H%M%S')
 
 
-        question = 'Выберите номер'
-        bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
+                key_number = types.InlineKeyboardButton(text=korr.get('contractor') + ", " + korr.get('number') + " от " + datetime.strftime(korr_date, '%d.%m.%y'), callback_data=korr.get('number') + ':' + korr.get('korr')) 
+                keyboard.add(key_number); 
 
- 
-            # bot.send_message(message.from_user.id, korr.get('number'))
+
+            question = 'Выберите номер'
+            bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
+
+        else:
+
+            bot.send_message(message.from_user.id, "по фильтру " + message.text + ' ничего не найдено')
+            get_text_messages(message)
 
     else:
 
@@ -100,15 +99,18 @@ def get_korr_photo(message):
 
             bot.send_message(message.chat.id, 'файл сохранен в базе')
 
-            bot.send_message(message.chat.id, 'Сделайте еще фото ' + korr_number + ' или введите ОК для выхода')
-
-            bot.register_next_step_handler(message, get_korr_photo)
-
         except Exception:
+            
             bot.send_message(message.chat.id, 'Ошибка: ' + str(sys.exc_info()))
 
+        bot.send_message(message.chat.id, 'Сделайте еще фото ' + korr_number)
+
+        bot.register_next_step_handler(message, get_korr_photo)
 
 
+    else:
+
+        get_text_messages(message)
 
 
 
