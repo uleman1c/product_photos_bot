@@ -1,5 +1,6 @@
 import json
 import sys
+import uuid
 from telebot import types
 import telebot
 
@@ -39,7 +40,7 @@ def get_korr_number(message):
     
     bot.send_message(message.from_user.id, 'Ищем номер ' + korr_number)
 
-    server_address = "https://ow.ap-ex.ru/tm_po/hs/dta/obj?request=getKorrByFilter&filter=" + korr_number
+    server_address = "https://ow.ap-ex.ru/Tech_man/hs/dta/obj?request=getKorrByFilter&filter=" + korr_number
     try:
         data_dict = requests.get(server_address, auth=("exch", "123456")).json()
     except Exception:
@@ -94,10 +95,14 @@ def get_korr_photo(message):
 
         send = requests.get('https://api.telegram.org/file/bot' + bot_token + '/' + file_info.file_path)
 
-        try:
-            req = requests.post("https://ow.ap-ex.ru/tm_po/hs/dta/obj", data=send.content, auth=('exch', '123456'))
+        try: 
+            req = requests.post("https://ow.ap-ex.ru/Tech_man/hs/dta/files/doc/ЗаявкаНаКорректировкуТоваров/" + korr_id + "/" + str(uuid.uuid4()) + "." + m_file_path[1], data=send.content, auth=('exch', '123456'))
 
             bot.send_message(message.chat.id, 'файл сохранен в базе')
+
+            bot.send_message(message.chat.id, 'Сделайте еще фото ' + korr_number + ' или введите ОК для выхода')
+
+            bot.register_next_step_handler(message, get_korr_photo)
 
         except Exception:
             bot.send_message(message.chat.id, 'Ошибка: ' + str(sys.exc_info()))
