@@ -6,6 +6,7 @@ from telebot import types
 import telebot
 
 from bot_token import get_token
+from bot_server import get_params
 
 bot_token = get_token()
 
@@ -32,9 +33,9 @@ def get_korr_number(message):
     
     # bot.send_message(message.from_user.id, 'Ищем номер ' + korr_number)
 
-    server_address = "https://ow.ap-ex.ru/Tech_man/hs/dta/obj?request=getKorrByFilter&filter=" + korr_number
+    server_address = get_params().get('addr') + "/hs/dta/obj?request=getKorrByFilter&filter=" + korr_number
     try:
-        data_dict = requests.get(server_address, auth=("exch", "123456")).json()
+        data_dict = requests.get(server_address, auth=(get_params().get('user'), get_params().get('pwd'))).json()
     except Exception:
         data_dict = {'success':False, 'message': str(sys.exc_info())}
 
@@ -95,7 +96,8 @@ def get_korr_photo(message):
         send = requests.get('https://api.telegram.org/file/bot' + bot_token + '/' + file_info.file_path)
 
         try: 
-            req = requests.post("https://ow.ap-ex.ru/Tech_man/hs/dta/files/doc/ЗаявкаНаКорректировкуТоваров/" + korr_id + "/" + str(uuid.uuid4()) + "." + m_file_path[1], data=send.content, auth=('exch', '123456'))
+            req = requests.post(get_params().get('addr') + "/hs/dta/files/doc/ЗаявкаНаКорректировкуТоваров/" + korr_id + "/" + str(uuid.uuid4()) + "." + m_file_path[1], 
+                data=send.content, auth=(get_params().get('user'), get_params().get('pwd')))
 
             bot.send_message(message.chat.id, 'файл сохранен в базе')
 
