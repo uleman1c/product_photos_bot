@@ -2,4 +2,6 @@ venv
 bot_token.py
 *.bak
 __pycache__/
+
 bot_server.py
+.gitignore
