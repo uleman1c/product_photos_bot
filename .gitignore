@@ -1,2 +1,4 @@
 venv
 bot_token.py
+*.bak
+__pycache__/
