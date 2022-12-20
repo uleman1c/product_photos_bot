@@ -17,7 +17,7 @@ import requests
 korr_number = ''
 korr_id = ''
 
-@bot.message_handler(content_types=['text', 'document', 'audio'])
+@bot.message_handler(content_types=['text', 'document', 'audio', 'video'])
 def get_text_messages(message):
 
     bot.send_message(message.from_user.id, "введите номер корректировки или часть названия контрагента")
@@ -88,9 +88,19 @@ def get_korr_photo(message):
 
     global korr_number, korr_id
 
+    file_info = None
+
     if message.photo is not None:
 
         file_info = bot.get_file(message.photo[len(message.photo) - 1].file_id)
+
+    elif message.video is not None:
+
+        file_info = bot.get_file(message.video.file_id)
+
+
+    if file_info is not None:
+
         m_file_path = file_info.file_path.split('.')
 
         send = requests.get('https://api.telegram.org/file/bot' + bot_token + '/' + file_info.file_path)
